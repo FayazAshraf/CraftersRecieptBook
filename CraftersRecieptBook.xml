@@ -1,0 +1,253 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\..\FrameXML\UI.xsd">
+	<Script file="CraftersRecieptBook.lua"/>
+	<Script file="Modules\OrderList.lua"/>
+
+
+	<Frame name = "DetailsWindowTemplate" virtual = "true">
+		<Size x="225" y="50"/>	
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture parentKey="Background" atlas="CraftingOrder-RemainingOrders-Frame" useAtlasSize="false">
+
+					<Anchors>
+						<Anchor point="TOPRIGHT"/>
+						<Anchor point="BOTTOMLEFT"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+			<Layer level="ARTWORK">
+					<FontString parentKey="Field1" inherits="GameFontNormal" justifyV="MIDDLE" justifyH="CENTER" text = "0">
+					<Size x="0" y="30"/>
+					<Anchors>
+						<Anchor point="TOP" x="0" y="3"/>
+
+					</Anchors>					
+				</FontString>
+					<FontString parentKey="Field2" inherits="GameFontNormal" justifyV="MIDDLE" justifyH="CENTER" text = "0">
+					<Size x="0" y="30"/>
+					<Anchors>
+						<Anchor point="TOP" x="0" y="-10"/>
+					</Anchors>					
+				</FontString>
+				<FontString parentKey="Field3" inherits="GameFontNormal" justifyV="MIDDLE" justifyH="CENTER" text = "0">
+					<Size x="0" y="30"/>
+					<Anchors>
+						<Anchor point="TOP" x="0" y="-23"/>
+					</Anchors>					
+				</FontString>
+			</Layer>
+		</Layers>
+	</Frame>
+
+
+	<Frame name ="CompletedOrderList" mixin = "ProfessionsCraftingOrderPageMixin" hidden = "true">
+		<Size x="200" y="300"/>
+		<Anchors>
+
+			<Anchor point="CENTER"/>
+		</Anchors>
+		<Layers>
+			<Layer>
+				<Texture parentKey="Background" atlas="auctionhouse-background-index" useAtlasSize="false">
+					<Anchors>
+						<Anchor point="TOPLEFT" x="3" y="-22"/>
+						<Anchor point="BOTTOMRIGHT"  x="-6" y="0"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+		</Layers>
+		<Frames>
+			<Frame parentKey="HeaderContainer">
+				<Size y="20"/>
+				<Anchors>
+					<Anchor point="TOPLEFT" x="3" y="-1"/>
+					<Anchor point="TOPRIGHT" x="-25" y="-1"/>
+				</Anchors>
+			</Frame>
+			<Frame parentKey="NineSlice" useParentLevel="true" inherits="NineSlicePanelTemplate">
+				<KeyValues>
+					<KeyValue key="layoutType" value="InsetFrameTemplate" type="string"/>
+				</KeyValues>
+				<Anchors>
+					<Anchor point="TOPLEFT" x="0" y="-19"/>
+					<Anchor point="BOTTOMRIGHT" x="-22" y="0"/>
+				</Anchors>
+			</Frame>
+			<Frame parentKey="ScrollBox" inherits="WowScrollBoxList">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeKey="$parent.Background" relativePoint="TOPLEFT"/>
+					<Anchor point="BOTTOMRIGHT" relativeKey="$parent.Background" relativePoint="BOTTOMRIGHT" x="-14" y="0"/>
+				</Anchors>
+			</Frame>
+			<EventFrame parentKey="ScrollBar" inherits="MinimalScrollBar">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeKey="$parent.ScrollBox" relativePoint="TOPRIGHT" x="0" y="-2"/>
+					<Anchor point="BOTTOMLEFT" relativeKey="$parent.ScrollBox" relativePoint="BOTTOMRIGHT" x="0" y="2"/>
+				</Anchors>
+			</EventFrame>
+			<Frame parentKey="ContextMenu" inherits="UIDropDownMenuTemplate" enableMouse="true"/>
+			<Frame parentKey="LoadingSpinner" hidden="true" frameLevel="2000">
+				<Size x="60" y="60"/>
+				<Anchors>
+					<Anchor point="CENTER" x="0" y="0"/>
+				</Anchors>
+				<Layers>
+					<Layer level="OVERLAY">
+						<Texture parentKey="Spinner" setAllPoints="true" atlas="auctionhouse-ui-loadingspinner"/>
+					</Layer>
+				</Layers>
+			</Frame>
+		</Frames>
+		<Layers>
+			<Layer level="OVERLAY">
+				<FontString parentKey="ResultsText" inherits="GameFontNormal" hidden="true">
+					<Anchors>
+						<Anchor point="TOP" relativeKey="$parent.ScrollBox" relativePoint="TOP" x="0" y="-20"/>
+						<Anchor point="LEFT" x="45"/>
+						<Anchor point="RIGHT" x="-67"/>
+					</Anchors>
+					<Shadow>
+						<Offset>
+							<AbsDimension x="1" y="-1"/>
+						</Offset>
+						<Color r="0" g="0" b="0"/>
+					</Shadow>
+				</FontString>
+			</Layer>
+		</Layers>
+		<Animations>
+			<AnimationGroup parentKey="SpinnerAnim" looping="REPEAT">
+				<Rotation childKey="LoadingSpinner.Spinner" order="1" duration="1" degrees="-360"/>
+			</AnimationGroup>
+		</Animations>
+	</Frame>
+
+
+	<Frame name="ProfessionsCraftingOrderPageTemplate2" parent="ProfessionsFrame" setAllPoints="true" mixin="ProfessionsCraftingOrderPageMixin2" virtual="true">
+		<Scripts>
+			<OnLoad method="OnLoad"/>
+			<OnShow method="OnShow"/>
+			<OnHide method="OnHide"/>
+			<OnEvent method="OnEvent"/>
+		</Scripts>
+		<Frames>
+			<Frame parentKey="BrowseFrame" setAllPoints="true">
+				<Frames>
+					<Frame parentKey="OrderList">
+						<Anchors>
+							<Anchor point="TOPLEFT" x = "5" y = "-100"/>
+							<Anchor point="BOTTOMLEFT"  x = "0" y = "20"/>
+							<Anchor point="TOPRIGHT"/>
+							<Anchor point="BOTTOMRIGHT"  />
+						</Anchors>
+						<Layers>
+							<Layer>
+								<Texture parentKey="Background" atlas="auctionhouse-background-index" useAtlasSize="false">
+									<Anchors>
+										<Anchor point="TOPLEFT" x="3" y="-22"/>
+										<Anchor point="BOTTOMRIGHT"  x="-6" y="0"/>
+									</Anchors>
+								</Texture>
+							</Layer>
+						</Layers>
+						<Frames>
+							<Frame parentKey="HeaderContainer">
+								<Size y="20"/>
+								<Anchors>
+									<Anchor point="TOPLEFT" x="3" y="-1"/>
+									<Anchor point="TOPRIGHT" x="-25" y="-1"/>
+								</Anchors>
+							</Frame>
+							<Frame parentKey="NineSlice" useParentLevel="true" inherits="NineSlicePanelTemplate">
+								<KeyValues>
+									<KeyValue key="layoutType" value="InsetFrameTemplate" type="string"/>
+								</KeyValues>
+								<Anchors>
+									<Anchor point="TOPLEFT" x="0" y="-19"/>
+									<Anchor point="BOTTOMRIGHT" x="-22" y="0"/>
+								</Anchors>
+							</Frame>
+							<Frame parentKey="ScrollBox" inherits="WowScrollBoxList">
+								<Anchors>
+									<Anchor point="TOPLEFT" relativeKey="$parent.Background" relativePoint="TOPLEFT"/>
+									<Anchor point="BOTTOMRIGHT" relativeKey="$parent.Background" relativePoint="BOTTOMRIGHT" x="-14" y="0"/>
+								</Anchors>
+							</Frame>
+							<EventFrame parentKey="ScrollBar" inherits="MinimalScrollBar">
+								<Anchors>
+									<Anchor point="TOPLEFT" relativeKey="$parent.ScrollBox" relativePoint="TOPRIGHT" x="0" y="-2"/>
+									<Anchor point="BOTTOMLEFT" relativeKey="$parent.ScrollBox" relativePoint="BOTTOMRIGHT" x="0" y="2"/>
+								</Anchors>
+							</EventFrame>
+							<Frame parentKey="ContextMenu" inherits="UIDropDownMenuTemplate" enableMouse="true"/>
+							<Frame parentKey="LoadingSpinner" hidden="true" frameLevel="2000">
+								<Size x="60" y="60"/>
+								<Anchors>
+									<Anchor point="CENTER" x="0" y="0"/>
+								</Anchors>
+								<Layers>
+									<Layer level="OVERLAY">
+										<Texture parentKey="Spinner" setAllPoints="true" atlas="auctionhouse-ui-loadingspinner"/>
+									</Layer>
+								</Layers>
+							</Frame>
+						</Frames>
+						<Layers>
+							<Layer level="OVERLAY">
+								<FontString parentKey="ResultsText" inherits="GameFontNormal" hidden="true">
+									<Anchors>
+										<Anchor point="TOP" relativeKey="$parent.ScrollBox" relativePoint="TOP" x="0" y="-20"/>
+										<Anchor point="LEFT" x="45"/>
+										<Anchor point="RIGHT" x="-67"/>
+									</Anchors>
+									<Shadow>
+										<Offset>
+											<AbsDimension x="1" y="-1"/>
+										</Offset>
+										<Color r="0" g="0" b="0"/>
+									</Shadow>
+								</FontString>
+							</Layer>
+						</Layers>
+						<Animations>
+							<AnimationGroup parentKey="SpinnerAnim" looping="REPEAT">
+								<Rotation childKey="LoadingSpinner.Spinner" order="1" duration="1" degrees="-360"/>
+							</AnimationGroup>
+						</Animations>
+					</Frame>
+		
+
+				</Frames>
+			</Frame>
+
+			<Frame parentKey="OrderView" inherits="ProfessionsCrafterOrderViewTemplate" hidden="true"/>
+		</Frames>
+	</Frame>
+
+
+
+	<Frame name="RecieptTableCellCustomerDateTemplate" mixin="RecieptTableCellDateMixin" inherits="ProfessionsTableCellTextTemplate" virtual="true"/>
+	<Frame name="RecieptTableCellProfessionTemplate" mixin="RecieptTableCellProfessionMixin" inherits="ProfessionsTableCellTextTemplate" virtual="true"/>
+	<Frame name="RecieptTableCellCustomerTypeTemplate" mixin="RecieptTableCellTypeMixin" inherits="ProfessionsTableCellTextTemplate" virtual="true"/>
+	<Frame name="RecieptTableCellItemNameTemplate" mixin="RecieptTableCellItemNameMixin" inherits="ProfessionsTableCellTextTemplate" virtual="true"/>
+	<Frame name="RecieptTableCellCustomerNameTemplate" mixin="RecieptTableCellCustomerNameMixin" inherits="ProfessionsTableCellTextTemplate" virtual="true"/>
+	<Frame name="RecieptTableCellActualCommissionTemplate" mixin="RecieptTableCellActualCommissionMixin" inherits="ProfessionsTableCellTextTemplate" virtual="true"/>
+	<Frame name="RecieptTableCellProcsTemplate" mixin="RecieptTableCellProcsMixin" inherits="ProfessionsTableCellTextTemplate" virtual="true"/>
+
+
+	<Button name="ProfessionsCrafterOrderListElementTemplate2" mixin="ProfessionsCrafterOrderListElementMixin2" registerForClicks="LeftButtonUp, RightButtonUp" virtual="true">
+		<Size y="20"/>
+		<Layers>
+			<Layer level="OVERLAY">
+				<Texture parentKey="HighlightTexture" atlas="auctionhouse-ui-row-highlight" alphaMode="ADD" setAllPoints="true" hidden="true"/>
+			</Layer>
+		</Layers>
+		<Scripts>
+			<OnEnter method="OnEnter"/>
+			<OnLeave method="OnLeave"/>
+			<OnClick method="OnClick"/>
+		</Scripts>
+	</Button>
+
+</Ui>
