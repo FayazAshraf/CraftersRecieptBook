@@ -25,5 +25,3 @@ Libs\AceLocale-3.0\AceLocale-3.0.xml
 
 
 CraftersRecieptBook.xml
-#WorkOrderRecieptBook.lua
-#Modules\OrderList.lua
