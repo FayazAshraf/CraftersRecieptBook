@@ -529,6 +529,4 @@ function RecieptTableCellProcsMixin:Populate(rowData, dataIndex)
 	end
 
 	ProfessionsTableCellTextMixin.SetText(self, text);
-
-
 end
