@@ -27,16 +27,12 @@ function addon:EventHandler(event, arg1, ...)
 	if event == "ADDON_LOADED" then
 	elseif event == "CRAFTINGORDERS_UPDATE_ORDER_COUNT" then
 	end
-
-
 end
 
 ---Ace based addon initilization
 function addon:OnInitialize()
   self.db = LibStub("AceDB-3.0"):New("CraftersRecieptBookDB")
   self.db.char.orders = self.db.char.orders or {}
-
-  
 end
 
 function addon:ADDON_LOADED(...)
@@ -51,16 +47,16 @@ function addon:TRADE_SKILL_CURRENCY_REWARD_RESULT(...)
 	addon.db.char.orders[orderID]["reward"] = data
 end
 
-
 function addon:TRADE_SKILL_ITEM_CRAFTED_RESULT(...)
 	local orderInfo = ProfessionsFrame.OrdersPage.OrderView.order
+	if not orderInfo then return end
 	local details = ProfessionsFrame.OrdersPage.OrderView.OrderDetails.SchematicForm.Details.operationInfo
 	local orderID = orderInfo.orderID
 	local _, data = ...
 	local index = #addon.db.char.orders
 	addon.db.char.orders[1]["results"] = data
 end
-
+--ProfessionsFrame.OrdersPage.OrderView.OrderDetails.SchematicForm:GetRecipeInfo()
 
 IsAddOnLoaded("Blizzard_Professions")
 function addon:OnEnable()
@@ -74,41 +70,36 @@ function addon:OnEnable()
 		addon.detailsTextFrame:Hide() 
 		addon.detailsTextFrame2:Hide() 
 		addon.detailsTextFrame3:Hide() 
-
 	end)
+
 	addon:HookScript(ProfessionsFrame.OrdersPage.OrderView.OrderDetails, "OnShow", function() addon.profitTextFrame:Hide() end)
 	addon:HookScript(ProfessionsFrame.OrdersPage.OrderView.OrderDetails, "OnHide", function() addon.profitTextFrame:Show() end)
 
 	addon:SecureHook(ProfessionsFrame.OrdersPage, "UpdateOrdersRemaining", function() addon:UpdateFrames() end)
 
-
-
+--x	ProfessionsRecipeSchematicFor:Show()
 	if IsAddOnLoaded("Blizzard_Professions") then
 		addon:InitFrames()
 	else
 		addon:RegisterEvent("ADDON_LOADED")
-
-
-
 	end
 	--addon:RegisterEvent("TRADE_SKILL_CURRENCY_REWARD_RESULT")
 	addon:RegisterEvent("TRADE_SKILL_ITEM_CRAFTED_RESULT")
 end
 
 
-
 --0 = public
 --1 = guild
 --2 = personal
-function GetOrderType()
+local function GetOrderType()
 	for _, typeTab in ipairs(ProfessionsFrame.OrdersPage.BrowseFrame.orderTypeTabs) do
 		if typeTab.isSelected then
 			return typeTab.orderType
 		end
 	end
-
 end
 
+--ProfessionsFrame.OrdersPage.OrderView.OrderDetails.SchematicForm.Details.FinishingReagentSlotContainer
 function addon:GetOrderData()
 	print("Logged Data")
 	local orderInfo = ProfessionsFrame.OrdersPage.OrderView.order
@@ -128,10 +119,9 @@ function addon:GetOrderData()
 
 end
 
-function clearData()
+local function clearData()
 	addon.db.char.orders = {}
 end
-
 
 local function GetProfessionCrafts()
 	local profession1, profession2
@@ -139,13 +129,18 @@ local function GetProfessionCrafts()
 	local profession2Crafts =  0
 	local profession1Profit = 0
 	local profession2Profit =  0
+	local profession1Data = {0,0,0}
+	local profession2Data = {0,0,0}
 	for i, data in ipairs(addon.db.char.orders) do
 		if not profession1 then
 			profession1 = data.profession
 		end
+		
+		local orderType = data.orderInfo.orderType
 		if data.profession == profession1 then
 			profession1Crafts = profession1Crafts + 1
 			profession1Profit = profession1Profit + data.orderInfo.tipAmount - data.orderInfo.consortiumCut
+			profession1Data[orderType + 1] = profession1Data[orderType + 1] + 1
 		elseif data.profession ~= profession1 then
 			if not profession2 then
 				profession2 = data.profession
@@ -153,61 +148,93 @@ local function GetProfessionCrafts()
 
 			profession2Crafts = profession2Crafts + 1
 			profession2Profit = profession2Profit + data.orderInfo.tipAmount - data.orderInfo.consortiumCut
+			profession2Data[orderType + 1] = profession2Data[orderType + 1] + 1
 		end
 	end
 
-	return {profession1, profession1Crafts, profession1Profit, profession2, profession2Crafts, profession2Profit}
+	return {profession1, profession1Crafts, profession1Profit, profession1Data, profession2, profession2Crafts, profession2Profit, profession2Data}
 end
 
-
 function addon:InitFrames()
-	local f = CreateFrame("Frame", nil, ProfessionsFrame.OrdersPage, "DetailsWindowTemplate");
+	local f = CreateFrame("Frame", nil, ProfessionsFrame.OrdersPage, "DetailsWindowTemplate")
 	f:Hide()
 	f:SetPoint("TOPLEFT",ProfessionsFrame.OrdersPage.BrowseFrame.OrdersRemainingDisplay, "TOPLEFT", -21, 5 )
-
-		f:SetScript("OnEnter", function(frame)
-		GameTooltip:SetOwner(frame, "ANCHOR_RIGHT");
-		local claimInfo = C_CraftingOrders.GetOrderClaimInfo(C_TradeSkillUI.GetChildProfessionInfo().profession);
-		local tooltipText;
+	f:SetScript("OnEnter", function(frame)
+		GameTooltip:SetOwner(frame, "ANCHOR_RIGHT")
+		local claimInfo = C_CraftingOrders.GetOrderClaimInfo(C_TradeSkillUI.GetChildProfessionInfo().profession)
+		local tooltipText
 		if claimInfo.hoursToRecharge then
-			tooltipText = CRAFTING_ORDERS_CLAIMS_REMAINING_REFRESH_TOOLTIP:format(claimInfo.claimsRemaining, claimInfo.hoursToRecharge);
+			tooltipText = CRAFTING_ORDERS_CLAIMS_REMAINING_REFRESH_TOOLTIP:format(claimInfo.claimsRemaining, claimInfo.hoursToRecharge)
 		else
-			tooltipText = CRAFTING_ORDERS_CLAIMS_REMAINING_TOOLTIP:format(claimInfo.claimsRemaining);
+			tooltipText = CRAFTING_ORDERS_CLAIMS_REMAINING_TOOLTIP:format(claimInfo.claimsRemaining)
 		end
-		GameTooltip_AddNormalLine(GameTooltip, tooltipText);
-		GameTooltip:Show();
-	end);
-	f:SetScript("OnLeave", GameTooltip_Hide);
+		GameTooltip_AddNormalLine(GameTooltip, tooltipText)
+		GameTooltip:Show()
+	end)
+	f:SetScript("OnLeave", GameTooltip_Hide)
 	addon.profitTextFrame = f
+
 	ProfessionsFrame.OrdersPage.BrowseFrame.OrdersRemainingDisplay:Hide()
 
-
-
-
-	local b = CreateFrame("Button", "Blu2", ProfessionsFrame.OrdersPage, "UIPanelButtonTemplate");
+	local b = CreateFrame("Button", nil, ProfessionsFrame.OrdersPage, "UIPanelButtonTemplate")
 	b:SetPoint("TOPLEFT",f, "TOPRIGHT", 5, -5 )
-
 	b:Show()
 	b:SetSize(24,24)
 	b:SetText("?")
 	b:SetScript("OnClick", function() addon:ToggleScreen() end)
 
-	f = CreateFrame("Frame", nil, ProfessionsFrame.OrdersPage, "DetailsWindowTemplate");
+	f = CreateFrame("Frame", nil, ProfessionsFrame.OrdersPage, "DetailsWindowTemplate")
 	f:Hide()
 	f:SetPoint("TOPRIGHT",addon.profitTextFrame, "TOPLEFT", -21, 0 )
+	f:SetScript("OnEnter", function(frame)
+		GameTooltip:SetOwner(frame, "ANCHOR_RIGHT")
+		local tooltipText
+		local craftData = GetProfessionCrafts()
+		if not craftData[1] then return end
+
+		local profession1 = addon:GetProfessionName(craftData[1])
+		tooltipText = "="..profession1..":= \n".."Public: "..craftData[4][1].."\nGuild: "..craftData[4][2].."\nPrivate: "..craftData[4][3]
+
+		if craftData[5] then
+			local profession2	= addon:GetProfessionName(craftData[5])
+			tooltipText = tooltipText.."\n\n="..profession2..":= \n".."Public: "..craftData[8][1].."\nGuild: "..craftData[8][2].."\nPrivate: "..craftData[8][3]
+		end
+		
+		GameTooltip_AddNormalLine(GameTooltip, tooltipText)
+		GameTooltip:Show()
+	end)
+	f:SetScript("OnLeave", GameTooltip_Hide)
 	addon.detailsTextFrame3 = f
 
-	f = CreateFrame("Frame", nil, ProfessionsFrame.OrdersPage, "DetailsWindowTemplate");
+	f = CreateFrame("Frame", nil, ProfessionsFrame.OrdersPage, "DetailsWindowTemplate")
 	f:Hide()
 	f:SetPoint("TOPRIGHT",addon.detailsTextFrame3, "TOPLEFT", -21, 0 )
 	addon.detailsTextFrame2 = f
 
-	f = CreateFrame("Frame", nil, ProfessionsFrame.OrdersPage, "DetailsWindowTemplate");
+	f = CreateFrame("Frame", nil, ProfessionsFrame.OrdersPage, "DetailsWindowTemplate")
 	f:Hide()
 	f:SetPoint("TOPRIGHT",addon.detailsTextFrame2, "TOPLEFT", -21, 0 )
+	f:SetScript("OnEnter", function(frame)
+		GameTooltip:SetOwner(frame, "ANCHOR_RIGHT")
+		local tooltipText
+		local craftData = GetProfessionCrafts()
+		if not craftData[1] then return end
+
+		local profession1 = addon:GetProfessionName(craftData[1])
+		tooltipText = "="..profession1..":= \n".."Public: "..craftData[4][1].."\nGuild: "..craftData[4][2].."\nPrivate: "..craftData[4][3]
+
+		if craftData[5] then
+			local profession2	= addon:GetProfessionName(craftData[5])
+			tooltipText = tooltipText.."\n\n="..profession2..":= \n".."Public: "..craftData[8][1].."\nGuild: "..craftData[8][2].."\nPrivate: "..craftData[8][3]
+		end
+		
+		GameTooltip_AddNormalLine(GameTooltip, tooltipText)
+		GameTooltip:Show()
+	end)
+	f:SetScript("OnLeave", GameTooltip_Hide)
 	addon.detailsTextFrame = f
 
-	local f = CreateFrame("Frame", "Blu", ProfessionsFrame, "ProfessionsCraftingOrderPageTemplate2");
+	local f = CreateFrame("Frame", nil, ProfessionsFrame, "ProfessionsCraftingOrderPageTemplate2")
 	f:Hide()
 	addon.orderListFrame = f
 
@@ -222,21 +249,20 @@ addon.detailsTextFrame3:SetShown(not ProfessionsFrame.OrdersPage.BrowseFrame:IsS
 end
 
 function addon:ConvertToGold(value)
-	local gold = floor(value / (COPPER_PER_SILVER * SILVER_PER_GOLD));
-	local goldDisplay = BreakUpLargeNumbers(gold);
-	local silver = floor((value - (gold * COPPER_PER_SILVER * SILVER_PER_GOLD)) / COPPER_PER_SILVER);
-	local copper = mod(value, COPPER_PER_SILVER);
+	local gold = floor(value / (COPPER_PER_SILVER * SILVER_PER_GOLD))
+	local goldDisplay = BreakUpLargeNumbers(gold)
+	local silver = floor((value - (gold * COPPER_PER_SILVER * SILVER_PER_GOLD)) / COPPER_PER_SILVER)
+	local copper = mod(value, COPPER_PER_SILVER)
 
-	local goldString = GOLD_AMOUNT_TEXTURE:format(gold, 0, 0);
-	local silverString = SILVER_AMOUNT_TEXTURE:format(silver, 0, 0);
-	local copperString = COPPER_AMOUNT_TEXTURE:format(copper, 0, 0);
+	local goldString = GOLD_AMOUNT_TEXTURE:format(gold, 0, 0)
+	local silverString = SILVER_AMOUNT_TEXTURE:format(silver, 0, 0)
+	local copperString = COPPER_AMOUNT_TEXTURE:format(copper, 0, 0)
 
 	return {goldString, silverString, copperString}
 end
 
 function addon:UpdateFrames()
 	ProfessionsFrame.OrdersPage.BrowseFrame.OrdersRemainingDisplay:Hide()
-	--ProfessionsFrame.OrdersPage.BrowseFrame:Hide()
 	addon:UpdateTotals()
 end
 
@@ -282,29 +308,30 @@ function addon:UpdateTotals()
 	addon.profitTextFrame.Field3:SetText("Total Profit: "..totalProfit[1].."   "..totalProfit[2].."   "..totalProfit[3])
 	
 	local craftData = GetProfessionCrafts()
+
 	if not craftData[1] then return end
+
 	local profession1 = addon:GetProfessionName(craftData[1])
 	local profession2
 	addon.detailsTextFrame.Field1:SetText("Total Orders Crafted: "..#addon.db.char.orders)
 	addon.detailsTextFrame.Field2:SetText(profession1..": "..craftData[2])
 
-	if craftData[4] then
-		profession2 = addon:GetProfessionName(craftData[4])
-		addon.detailsTextFrame.Field3:SetText(profession2..": "..craftData[5])
-		local profit = addon:ConvertToGold(craftData[6])
+	if craftData[5] then
+		profession2 = addon:GetProfessionName(craftData[5])
+		addon.detailsTextFrame.Field3:SetText(profession2..": "..craftData[6])
+		local profit = addon:ConvertToGold(craftData[7])
 		addon.detailsTextFrame3.Field3:SetText(profession2..": ".. profit[1].."   "..profit[2].."   "..profit[3])
 	else
 		addon.detailsTextFrame.Field3:Hide()
 		addon.detailsTextFrame3.Field2:Hide()
 
 	end
-	
 
 	addon.detailsTextFrame2.Field1:SetText("Inspired Procs: "..inspired)
 	addon.detailsTextFrame2.Field2:SetText("Resourceful Procs: ".. resourceful)
 	addon.detailsTextFrame2.Field3:SetText("Multicraft Procs: "..multicraft)
+
 	local profit = addon:ConvertToGold(craftData[3])
 	addon.detailsTextFrame3.Field1:SetText("=Profit by Profession=")
 	addon.detailsTextFrame3.Field2:SetText(profession1..": ".. profit[1].."   "..profit[2].."   "..profit[3])	 
-	--return profit
 end

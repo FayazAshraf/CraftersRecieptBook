@@ -28,11 +28,17 @@ local PTC = {
 	LeftCellPadding=0,
 	Width=150
   },
+  Procs = {
+  	RightCellPadding=0,
+	Padding=10,
+	LeftCellPadding=0,
+	Width=220
+  },
   CustomerName={
 	RightCellPadding=0,
 	Padding=10,
 	LeftCellPadding=0,
-	Width=225
+	Width=175
   },
   NoPadding=0,
   StandardPadding=10,
@@ -41,7 +47,7 @@ local PTC = {
 	RightCellPadding=0,
 	Padding=0,
 	FillCoefficient=1,
-	Width=100
+	Width=75
   },
   ItemName={
 	RightCellPadding=0,
@@ -66,7 +72,7 @@ local PTC = {
 	RightCellPadding=0,
 	Padding=10,
 	LeftCellPadding=0,
-	Width=85
+	Width=65
   }
 }
 
@@ -92,7 +98,7 @@ local function GetHeaderNameFromSortOrder(sortOrder)
 	elseif sortOrder == "Date" then
 		return "Date";
 	elseif sortOrder == "TYPE" then
-		return "Order Type";
+		return "Type";
 	elseif sortOrder == "Profession" then
 		return "Profession";
 	end
@@ -103,6 +109,23 @@ function ProfessionsCrafterOrderListElementMixin2:OnLineEnter()
 	self.HighlightTexture:Show();
 	GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
 	self:SetScript("OnUpdate", self.OnUpdate);
+
+
+		self.HighlightTexture:Show();
+
+	GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+
+	--local reagents = {};
+	--local qualityIDs = C_TradeSkillUI.GetQualitiesForRecipe(self.option.spellID);
+	--local qualityIdx = self.option.minQuality or 1;
+	--GameTooltip:SetRecipeResultItem(self.option.spellID, reagents, nil, nil, qualityIDs and qualityIDs[qualityIdx]);
+
+	--if IsModifiedClick("DRESSUP") then
+		--ShowInspectCursor();
+	--end
+
+	self:SetScript("OnUpdate", self.OnUpdate);
+
 end
 
 function ProfessionsCrafterOrderListElementMixin2:OnClick(button)
@@ -179,8 +202,8 @@ function ProfessionsCraftingOrderPageMixin2:SetupTable()
 	self.tableBuilder:AddFixedWidthColumn(self, PTC.NoPadding, PTC.Tip.Width, PTC.Tip.LeftCellPadding,
 											  PTC.Tip.RightCellPadding, ProfessionsSortOrder.Tip, "RecieptTableCellActualCommissionTemplate");
 
-	self.tableBuilder:AddUnsortableFixedWidthColumn(self, PTC.NoPadding, PTC.Tip.Width, PTC.Tip.LeftCellPadding,
-											  PTC.Tip.RightCellPadding, "Procs", "RecieptTableCellProcsTemplate");
+	self.tableBuilder:AddUnsortableFixedWidthColumn(self, PTC.NoPadding, PTC.Procs.Width, PTC.Procs.LeftCellPadding,
+											  PTC.Procs.RightCellPadding, "Procs", "RecieptTableCellProcsTemplate");
 
 	self.tableBuilder:Arrange();
 end
@@ -479,12 +502,22 @@ RecieptTableCellProcsMixin = CreateFromMixins(TableBuilderCellMixin);
 function RecieptTableCellProcsMixin:Populate(rowData, dataIndex)
 	local text = " "
 
+	local craftQuality = rowData.option.details.craftingQuality or 0
+	local actualQuality = rowData.option.results.craftingQuality or 0
+
 	if rowData.option.results.isCrit then
 		text = text.."Inspired, "
+	else
+		if actualQuality ~= 0  and craftQuality ~= actualQuality then
+			local skill = rowData.option.details.upperSkillTreshold - (rowData.option.details.baseSkill  + rowData.option.details.bonusSkill)
+			text = text.."Lucky(+"..skill.."), "
+		end
 	end
+
 	if rowData.option.results.resourcesReturned then
 		text = text.."Resourceful, "
 	end
+	
 	if rowData.option.results.multicraft ~= 0 then
 		text = text.."Multicraft, "
 	end
