@@ -4,6 +4,8 @@
 ## Author: SLOKnightfall
 ## Notes: 
 ## SavedVariables: CraftersRecieptBookDB
+## X-Curse-Project-ID: 807430
+## X-Wago-ID: PANz3j64
 
 #Libraries
 Libs\LibStub\LibStub.lua

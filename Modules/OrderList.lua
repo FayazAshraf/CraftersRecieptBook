@@ -107,25 +107,10 @@ end
 ProfessionsCrafterOrderListElementMixin2 = CreateFromMixins(ProfessionsCrafterOrderListElementMixin)
 function ProfessionsCrafterOrderListElementMixin2:OnLineEnter()
 	self.HighlightTexture:Show();
-	GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-	self:SetScript("OnUpdate", self.OnUpdate);
+	GameTooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT")
 
-
-		self.HighlightTexture:Show();
-
-	GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-
-	--local reagents = {};
-	--local qualityIDs = C_TradeSkillUI.GetQualitiesForRecipe(self.option.spellID);
-	--local qualityIdx = self.option.minQuality or 1;
-	--GameTooltip:SetRecipeResultItem(self.option.spellID, reagents, nil, nil, qualityIDs and qualityIDs[qualityIdx]);
-
-	--if IsModifiedClick("DRESSUP") then
-		--ShowInspectCursor();
-	--end
-
-	self:SetScript("OnUpdate", self.OnUpdate);
-
+	local hyperlink = self.option.results.hyperlink
+	GameTooltip:SetHyperlink(hyperlink)
 end
 
 function ProfessionsCrafterOrderListElementMixin2:OnClick(button)
@@ -514,13 +499,36 @@ function RecieptTableCellProcsMixin:Populate(rowData, dataIndex)
 		end
 	end
 
+	self:SetScript("OnEnter", function() end)
+	self:SetScript("OnLeave", function()
+			GameTooltip_Hide(); 
+		end)
 	if rowData.option.results.resourcesReturned then
 		text = text.."Resourceful, "
+		self:SetScript("OnEnter", function()
+		local text = ""
+		for i, d in ipairs(rowData.option.results.resourcesReturned) do
+			local ItemID = Item:CreateFromItemID(d.itemID);
+			local ItemName = ItemID:GetItemName();
+			local quantity = d.quantity
+
+			text = text..ItemName.."("..quantity..")"
+
+		end
+
+		GameTooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT");
+		GameTooltip:SetText(text, nil, nil, nil, nil, true);
+		GameTooltip:Show()
+		end)
+
+
 	end
-	
+
 	if rowData.option.results.multicraft ~= 0 then
 		text = text.."Multicraft, "
 	end
 
 	ProfessionsTableCellTextMixin.SetText(self, text);
+
+
 end

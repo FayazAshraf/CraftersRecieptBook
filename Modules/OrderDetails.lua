@@ -23,41 +23,41 @@ end
 
 function UpdateTransaction(data)
 	--self.transaction
-local reagents = data.orderInfo.orderInfo.reagents
---		xx = self.transaction.self.allocationTbls
-if not reagents then return end
-for i, d in ipairs(reagents) do
-	xx = d
-local quantity = d.reagent.quantity
-local slot = d.reagentSlot
+	local reagents = data.orderInfo.orderInfo.reagents
+	--		xx = self.transaction.self.allocationTbls
+	if not reagents then return end
+	for i, d in ipairs(reagents) do
+		--xx = d
+	local quantity = d.reagent.quantity
+	local slot = d.reagentSlot
 
-local reagent = d.reagent.itemID
+	local reagent = d.reagent.itemID
 
-if slot then 
-	print(slot)
-		--allocations = CreateAndInitFromMixin(AllocationsMixin)
-	--	allocations.reagent.itemID
-		  --  allocs={
-    --  [1]={
-      --  reagent={
-        --  itemID=193370
-      --  },
-       -- quantity=3,
+	if slot then 
+		print(slot)
+			--allocations = CreateAndInitFromMixin(AllocationsMixin)
+		--	allocations.reagent.itemID
+			  --  allocs={
+	    --  [1]={
+	      --  reagent={
+	        --  itemID=193370
+	      --  },
+	       -- quantity=3,
 
-      --}
-      --xxxx = data.transaction.allocationTbls[slot]
-      --tbl = data.transaction.allocationTbls[slot]
+	      --}
+	      --xxxx = data.transaction.allocationTbls[slot]
+	      --tbl = data.transaction.allocationTbls[slot]
 
-		--table.insert(self.allocationTbls, allocations)
---data.transaction.allocationTbls[slot]:Allocate(reagent, math.min(quantity, quantity))
---print(tbl.allocs.quantity)
-print(tbl.allocs)
-if tbl.allocs  then
-		print("settinsg")
-	tbl.allocs:SetQuantity(60)
+			--table.insert(self.allocationTbls, allocations)
+	--data.transaction.allocationTbls[slot]:Allocate(reagent, math.min(quantity, quantity))
+	--print(tbl.allocs.quantity)
+		print(tbl.allocs)
+		if tbl.allocs  then
+			print("settinsg")
+			tbl.allocs:SetQuantity(60)
+			end
+		end
 	end
-end
-end
 
 end
 ProfessionsRecipeSchematicFormMixin2 = CreateFromMixins(ProfessionsRecipeSchematicFormMixin)
@@ -86,7 +86,7 @@ function ProfessionsRecipeSchematicFormMixin2:OnShow()
     --FrameUtil.RegisterFrameForEvents(self, ProfessionsRecipeFormEvents)
 local order = GetOrderData(7302607) --7146948) --addon.db.char.orders[1]
 	local recipeInfo = C_TradeSkillUI.GetRecipeInfo(order.orderInfo.spellID) --addon.db.char.orders[1]
-self.orderInfo = order
+	self.orderInfo = order
 	if recipeInfo then
 		-- Details, including optional reagent unlocks, may have changed due to purchasing specialization points
 		self:Init(recipeInfo, self.isRecraftOverride)
@@ -173,11 +173,8 @@ function ProfessionsRecipeSchematicFormMixin2:Init(recipeInfo, isRecraftOverride
 	self.RecraftingRequiredTools:Hide()
 	self.RecraftingOutputText:Hide()
 
-
-
 	self.RecipeSourceButton:Hide()
 	self.FirstCraftBonus:Hide()
-
 
 	self.Reagents:Hide()
 	self.OptionalReagents:Hide()
@@ -280,21 +277,15 @@ function ProfessionsRecipeSchematicFormMixin2:Init(recipeInfo, isRecraftOverride
 
 
 
-local reagents = data.orderInfo.orderInfo.reagents
---		xx = self.transaction.self.allocationTbls
-if reagents then 
-	for i, d in ipairs(reagents) do
-		local quantity = d.reagent.quantity
-		local slot = d.reagentSlot
-		local reagent = d.reagent.itemID
-
-
-		--AllocateModification
+	local reagents = data.orderInfo.orderInfo.reagents
+	--		xx = self.transaction.self.allocationTbls
+	if reagents then 
+		for i, d in ipairs(reagents) do
+			local quantity = d.reagent.quantity
+			local slot = d.reagentSlot
+			local reagent = d.reagent.itemID
+		end
 	end
-
-
-end
-
 
 	-- Verifies that targets are still valid, and that the item modifications
 	-- for the item are updated if a recraft target.
@@ -542,7 +533,6 @@ end
 				GameTooltip:Show()
 			end)
 			
-
 		end
 	end
 	
