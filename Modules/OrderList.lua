@@ -485,17 +485,25 @@ end
 
 RecieptTableCellProcsMixin = CreateFromMixins(TableBuilderCellMixin);
 function RecieptTableCellProcsMixin:Populate(rowData, dataIndex)
-	local text = " "
+	local text = ""
+	local comma = ""
+
+	if rowData.option.results.firstCraftReward then
+		text = text.."1st Craft"
+		comma = ", "
+	end
 
 	local craftQuality = rowData.option.details.craftingQuality or 0
 	local actualQuality = rowData.option.results.craftingQuality or 0
 
 	if rowData.option.results.isCrit then
-		text = text.."Inspired, "
+		text = text..comma.."Inspired"
+		comma = ", "
 	else
 		if actualQuality ~= 0  and craftQuality ~= actualQuality then
 			local skill = rowData.option.details.upperSkillTreshold - (rowData.option.details.baseSkill  + rowData.option.details.bonusSkill)
-			text = text.."Lucky(+"..skill.."), "
+			text = text.."Lucky(+"..skill..")"
+			comma = ", "
 		end
 	end
 
@@ -503,8 +511,11 @@ function RecieptTableCellProcsMixin:Populate(rowData, dataIndex)
 	self:SetScript("OnLeave", function()
 			GameTooltip_Hide(); 
 		end)
+
 	if rowData.option.results.resourcesReturned then
-		text = text.."Resourceful, "
+		text = text..comma.."Resourceful"
+		comma = ", "
+
 		self:SetScript("OnEnter", function()
 		local text = ""
 		for i, d in ipairs(rowData.option.results.resourcesReturned) do
@@ -513,19 +524,16 @@ function RecieptTableCellProcsMixin:Populate(rowData, dataIndex)
 			local quantity = d.quantity
 
 			text = text..ItemName.."("..quantity..")"
-
 		end
 
 		GameTooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT");
 		GameTooltip:SetText(text, nil, nil, nil, nil, true);
 		GameTooltip:Show()
 		end)
-
-
 	end
 
 	if rowData.option.results.multicraft ~= 0 then
-		text = text.."Multicraft, "
+		text = text..comma.."Multicraft"
 	end
 
 	ProfessionsTableCellTextMixin.SetText(self, text);
