@@ -90,7 +90,7 @@ function addon:OnEnable()
 	end)
 
 	addon:HookScript(ProfessionsFrame.OrdersPage.OrderView.OrderDetails.SchematicForm.Details, "OnShow", function() 
-		addon.incense:Show()
+		--addon.incense:Show()
 		if not ProfessionsFrame.OrdersPage.OrderView.CreateButton:IsShown() then 
 			----addon:DisableIncense();
 		else
@@ -99,7 +99,7 @@ function addon:OnEnable()
 	end)
 
 	addon:HookScript(ProfessionsFrame.OrdersPage.OrderView.OrderDetails.SchematicForm.Details, "OnHide", function() 
-		addon.incense:Hide()
+		--addon.incense:Hide()
 	end)
 
 	addon:SecureHook(ProfessionsFrame.OrdersPage, "UpdateOrdersRemaining", function() addon:UpdateFrames() end)
