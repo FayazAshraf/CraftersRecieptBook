@@ -11,7 +11,7 @@
 local addonName, addon = ...
 addon = LibStub("AceAddon-3.0"):NewAddon(addon, addonName, "AceEvent-3.0", "AceConsole-3.0", "AceHook-3.0")
 local AceGUI = LibStub("AceGUI-3.0")
---local L = LibStub("AceLocale-3.0"):GetLocale(addonName)
+local L = LibStub("AceLocale-3.0"):GetLocale(addonName)
 local frames = {} 
 addon.frames = frames
 
@@ -54,15 +54,24 @@ function addon:TRADE_SKILL_ITEM_CRAFTED_RESULT(...)
 	local orderID = orderInfo.orderID
 	local _, data = ...
 	local index = #addon.db.char.orders
-	addon.db.char.orders[1]["results"] = data
+
+	local orderData = addon:LookupOrderData(orderID)
+	if orderData then 
+		orderData["results"] = data
+	end
 end
 --ProfessionsFrame.OrdersPage.OrderView.OrderDetails.SchematicForm:GetRecipeInfo()
 
 IsAddOnLoaded("Blizzard_Professions")
 function addon:OnEnable()
-	--addon:HookScript(ProfessionsFrame.OrdersPage.OrderView.OrderDetails, "OnShow", function() print("show0")end)
+
+--addon:HookScript(ProfessionsFrame.OrdersPage.OrderView.OrderDetails, "OnShow", function() print("show0")end)
 	--addon:HookScript(ProfessionsFrame.OrdersPage.OrderView.OrderInfo.StartOrderButton, "OnClick", function() addon:GetOrderData() end)
+
+	----addon:HookScript(ProfessionsFrame.OrdersPage.OrderView.CreateButton, "OnShow", function() addon:EnableIncense(); addon:InspirationReminder() end)
+	--addon:HookScript(ProfessionsFrame.OrdersPage.OrderView.CreateButton, "OnHide", function() addon:DisableIncense(); addon.incense:Hide() end)
 	addon:HookScript(ProfessionsFrame.OrdersPage.OrderView.CreateButton, "OnClick", function() addon:GetOrderData() end)
+
 	addon:HookScript(ProfessionsFrame.OrdersPage, "OnShow", function() addon.profitTextFrame:Show(); addon:UpdateFrames() end)
 	addon:HookScript(ProfessionsFrame.OrdersPage, "OnHide", function() 
 		addon.profitTextFrame:Hide() 
@@ -72,14 +81,34 @@ function addon:OnEnable()
 		addon.detailsTextFrame3:Hide() 
 	end)
 
-	addon:HookScript(ProfessionsFrame.OrdersPage.OrderView.OrderDetails, "OnShow", function() addon.profitTextFrame:Hide() end)
-	addon:HookScript(ProfessionsFrame.OrdersPage.OrderView.OrderDetails, "OnHide", function() addon.profitTextFrame:Show() end)
+	addon:HookScript(ProfessionsFrame.OrdersPage.OrderView.OrderDetails, "OnShow", function() 
+		addon.profitTextFrame:Hide() 
+	end)
+
+	addon:HookScript(ProfessionsFrame.OrdersPage.OrderView.OrderDetails, "OnHide", function() 
+		addon.profitTextFrame:Show() 
+	end)
+
+	addon:HookScript(ProfessionsFrame.OrdersPage.OrderView.OrderDetails.SchematicForm.Details, "OnShow", function() 
+		addon.incense:Show()
+		if not ProfessionsFrame.OrdersPage.OrderView.CreateButton:IsShown() then 
+			----addon:DisableIncense();
+		else
+			----addon:EnableIncense()
+		end
+	end)
+
+	addon:HookScript(ProfessionsFrame.OrdersPage.OrderView.OrderDetails.SchematicForm.Details, "OnHide", function() 
+		addon.incense:Hide()
+	end)
 
 	addon:SecureHook(ProfessionsFrame.OrdersPage, "UpdateOrdersRemaining", function() addon:UpdateFrames() end)
 
 --x	ProfessionsRecipeSchematicFor:Show()
 	if IsAddOnLoaded("Blizzard_Professions") then
 		addon:InitFrames()
+		--addon:InitIncense()
+
 	else
 		addon:RegisterEvent("ADDON_LOADED")
 	end
@@ -115,7 +144,11 @@ function addon:GetOrderData()
 		date = currentDate,
 	}
 
-	tinsert(addon.db.char.orders, 1, data)
+	isRecraft = addon.LookupOrderData(orderID)
+
+	if not isRecraft then 
+		tinsert(addon.db.char.orders, 1, data)
+	end
 
 end
 
@@ -135,7 +168,7 @@ local function GetProfessionCrafts()
 		if not profession1 then
 			profession1 = data.profession
 		end
-		
+
 		local orderType = data.orderInfo.orderType
 		if data.profession == profession1 then
 			profession1Crafts = profession1Crafts + 1
@@ -156,6 +189,12 @@ local function GetProfessionCrafts()
 end
 
 function addon:InitFrames()
+	local s = ProfessionsFrame.OrdersPage.OrderView.OrderDetails:CreateFontString(nil,"ARTWORK", "GameFontNormalHugeBlack") 
+	 s:SetText('|cffff0000'..L["Swap from Inspiration Tool"]..'|r')
+	 s:SetPoint("TOPRIGHT",ProfessionsFrame.OrdersPage.OrderView.OrderDetails, "TOPRIGHT", -45, -50 )
+	 s:Hide()
+	 addon.GearSwapWarning = s
+
 	local f = CreateFrame("Frame", nil, ProfessionsFrame.OrdersPage, "DetailsWindowTemplate")
 	f:Hide()
 	f:SetPoint("TOPLEFT",ProfessionsFrame.OrdersPage.BrowseFrame.OrdersRemainingDisplay, "TOPLEFT", -21, 5 )
@@ -241,11 +280,11 @@ function addon:InitFrames()
 end
 
 function addon:ToggleScreen()
-ProfessionsFrame.OrdersPage.BrowseFrame:SetShown(not ProfessionsFrame.OrdersPage.BrowseFrame:IsShown())
-addon.orderListFrame:SetShown(not ProfessionsFrame.OrdersPage.BrowseFrame:IsShown())
-addon.detailsTextFrame:SetShown(not ProfessionsFrame.OrdersPage.BrowseFrame:IsShown())
-addon.detailsTextFrame2:SetShown(not ProfessionsFrame.OrdersPage.BrowseFrame:IsShown())
-addon.detailsTextFrame3:SetShown(not ProfessionsFrame.OrdersPage.BrowseFrame:IsShown())
+	ProfessionsFrame.OrdersPage.BrowseFrame:SetShown(not ProfessionsFrame.OrdersPage.BrowseFrame:IsShown())
+	addon.orderListFrame:SetShown(not ProfessionsFrame.OrdersPage.BrowseFrame:IsShown())
+	addon.detailsTextFrame:SetShown(not ProfessionsFrame.OrdersPage.BrowseFrame:IsShown())
+	addon.detailsTextFrame2:SetShown(not ProfessionsFrame.OrdersPage.BrowseFrame:IsShown())
+	addon.detailsTextFrame3:SetShown(not ProfessionsFrame.OrdersPage.BrowseFrame:IsShown())
 end
 
 function addon:ConvertToGold(value)
@@ -289,14 +328,18 @@ function addon:UpdateTotals()
 			dailyProfit = dailyProfit + orderprofit
 		end
 
-		if data.results.isCrit then
-			inspired = inspired + 1
-		end
-		if data.results.resourcesReturned then
-			resourceful = resourceful + 1
-		end
-		if data.results.multicraft ~= 0 then
-			multicraft = multicraft + 1
+		if data.results then 
+			if data.results.isCrit then
+				inspired = inspired + 1
+			end
+
+			if data.results.resourcesReturned then
+				resourceful = resourceful + 1
+			end
+
+			if data.results.multicraft ~= 0 then
+				multicraft = multicraft + 1
+			end
 		end
 	end
 

@@ -4,6 +4,7 @@
 	<Script file="Modules\OrderList.lua"/>
 
 	<Script file="Modules\OrderDetails.lua"/>
+	<Script file="Modules\OrderHelpers.lua"/>
 
 	<Frame name = "DetailsWindowTemplate" virtual = "true">
 		<Size x="225" y="50"/>	

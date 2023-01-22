@@ -13,7 +13,7 @@ addon = LibStub("AceAddon-3.0"):GetAddon(addonName)
 local AceGUI = LibStub("AceGUI-3.0")
 --local L = LibStub("AceLocale-3.0"):GetLocale(addonName)
 
-local function GetOrderData(id)
+function addon:LookupOrderData(id)
 	for i, d in ipairs(addon.db.char.orders) do
 		if d.orderInfo.orderID == id then 
 		 	return d
@@ -84,7 +84,7 @@ end
 
 function ProfessionsRecipeSchematicFormMixin2:OnShow()
     --FrameUtil.RegisterFrameForEvents(self, ProfessionsRecipeFormEvents)
-local order = GetOrderData(7302607) --7146948) --addon.db.char.orders[1]
+local order = addon:LookupOrderData(7302607) --7146948) --addon.db.char.orders[1]
 	local recipeInfo = C_TradeSkillUI.GetRecipeInfo(order.orderInfo.spellID) --addon.db.char.orders[1]
 	self.orderInfo = order
 	if recipeInfo then

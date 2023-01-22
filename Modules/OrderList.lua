@@ -106,10 +106,19 @@ end
 
 ProfessionsCrafterOrderListElementMixin2 = CreateFromMixins(ProfessionsCrafterOrderListElementMixin)
 function ProfessionsCrafterOrderListElementMixin2:OnLineEnter()
+
+	local hyperlink
+	if not  self.option.results then
+		_, hyperlink = GetItemInfo(self.option.orderInfo.itemID) 
+	else
+		hyperlink = self.option.results.hyperlink
+	end
+
+	if not hyperlink then return end
+
 	self.HighlightTexture:Show();
 	GameTooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT")
 
-	local hyperlink = self.option.results.hyperlink
 	GameTooltip:SetHyperlink(hyperlink)
 end
 
@@ -461,8 +470,13 @@ end
 
 RecieptTableCellItemNameMixin = CreateFromMixins(TableBuilderCellMixin);
 function RecieptTableCellItemNameMixin:Populate(rowData, dataIndex)
-	local text = rowData.option.results.hyperlink
-	ProfessionsTableCellTextMixin.SetText(self, text);
+	local hyperlink
+	if not  rowData.option.results then
+		_, hyperlink = GetItemInfo(rowData.option.orderInfo.itemID) 
+	else
+		hyperlink = rowData.option.results.hyperlink
+	end
+	ProfessionsTableCellTextMixin.SetText(self, (hyperlink and hyperlink) or "Item Data Missing");
 end
 
 RecieptTableCellCustomerNameMixin = CreateFromMixins(TableBuilderCellMixin);
@@ -487,6 +501,11 @@ RecieptTableCellProcsMixin = CreateFromMixins(TableBuilderCellMixin);
 function RecieptTableCellProcsMixin:Populate(rowData, dataIndex)
 	local text = ""
 	local comma = ""
+
+	if not rowData.option.results or rowData.option.details then 
+		ProfessionsTableCellTextMixin.SetText(self, "");
+		return
+	end
 
 	if rowData.option.results.firstCraftReward then
 		text = text.."1st Craft"

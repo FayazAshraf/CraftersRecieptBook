@@ -22,6 +22,6 @@ Libs\AceLocale-3.0\AceLocale-3.0.xml
 
 
 #Localization
-
+Locale\enUS.lua
 
 CraftersRecieptBook.xml
