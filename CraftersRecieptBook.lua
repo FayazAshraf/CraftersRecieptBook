@@ -39,14 +39,7 @@ function addon:ADDON_LOADED(...)
 	--if ... = Blizzard_Professions
 end
 
-function addon:TRADE_SKILL_CURRENCY_REWARD_RESULT(...)
-	local orderInfo = ProfessionsFrame.OrdersPage.OrderView.order
-	local details = ProfessionsFrame.OrdersPage.OrderView.OrderDetails.SchematicForm.Details.operationInfo
-	local orderID = orderInfo.orderID
-	local _, data = ...
-	addon.db.char.orders[orderID]["reward"] = data
-end
-
+local OrderData
 function addon:TRADE_SKILL_ITEM_CRAFTED_RESULT(...)
 	local orderInfo = ProfessionsFrame.OrdersPage.OrderView.order
 	if not orderInfo then return end
@@ -55,10 +48,19 @@ function addon:TRADE_SKILL_ITEM_CRAFTED_RESULT(...)
 	local _, data = ...
 	local index = #addon.db.char.orders
 
-	local orderData = addon:LookupOrderData(orderID)
-	if orderData then 
-		orderData["results"] = data
+	--local orderData = addon:LookupOrderData(orderID)
+
+
+	isRecraft = addon.LookupOrderData(orderID)
+	print("Logged Data")
+	if not isRecraft then 
+		OrderData["results"] = data
+
+		tinsert(addon.db.char.orders, 1, OrderData)
+	else
+		isRecraft["results"] = data
 	end
+	OrderData = nil
 end
 --ProfessionsFrame.OrdersPage.OrderView.OrderDetails.SchematicForm:GetRecipeInfo()
 
@@ -112,7 +114,7 @@ function addon:OnEnable()
 	else
 		addon:RegisterEvent("ADDON_LOADED")
 	end
-	--addon:RegisterEvent("TRADE_SKILL_CURRENCY_REWARD_RESULT")
+	
 	addon:RegisterEvent("TRADE_SKILL_ITEM_CRAFTED_RESULT")
 end
 
@@ -130,7 +132,6 @@ end
 
 --ProfessionsFrame.OrdersPage.OrderView.OrderDetails.SchematicForm.Details.FinishingReagentSlotContainer
 function addon:GetOrderData()
-	print("Logged Data")
 	local orderInfo = ProfessionsFrame.OrdersPage.OrderView.order
 	local details = ProfessionsFrame.OrdersPage.OrderView.OrderDetails.SchematicForm.Details.operationInfo
 	local orderID = orderInfo.orderID
@@ -143,13 +144,7 @@ function addon:GetOrderData()
 		orderInfo = orderInfo,
 		date = currentDate,
 	}
-
-	isRecraft = addon.LookupOrderData(orderID)
-
-	if not isRecraft then 
-		tinsert(addon.db.char.orders, 1, data)
-	end
-
+	OrderData = data
 end
 
 local function clearData()
