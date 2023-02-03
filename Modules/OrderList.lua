@@ -206,24 +206,45 @@ function ProfessionsCraftingOrderPageMixin2:SortOrderIsValid(sortOrder)
 	return true
 end
 
-local function SortDate(lhs, rhs)
-	if not lhs or not rhs then return end
-	if lhs.date.year > rhs.date.year then 
-		return true
-	end
-	if lhs.date.year > rhs.date.year then
-		return true
-	end
-		
-	if lhs.date.day > rhs.date.day then
-		return true
-	end
 
-	return false
+function date_to_excel_date(dd, mm, yy) 
+local days, monthdays, leapyears, nonleapyears, nonnonleapyears
+
+    monthdays= { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
+
+    leapyears=tonumber(math.floor((yy-1900)/4));
+    nonleapyears=tonumber(math.floor((yy-1900)/100))
+    nonnonleapyears=tonumber(math.floor((yy-1600)/400))
+
+    if (((yy%4)==0) and mm<3) then
+      leapyears = leapyears - 1
+    end
+
+    days= 365 * (yy-1900) + leapyears - nonleapyears + nonnonleapyears
+
+    c=1
+    while (c<mm) do
+      days = days + monthdays[c]
+    c=c+1
+    end
+
+    days=days+dd+1
+
+    return days
+end
+
+local function SortDate(lhs, rhs)
+
+
+	if not lhs or not rhs then return false end
+
+	return date_to_excel_date(lhs.date.day, lhs.date.month, lhs.date.year) > date_to_excel_date(rhs.date.day, rhs.date.month, rhs.date.year)
+
+
 end
 
 local function ApplySortOrder(sortOrder, lhs, rhs)
-	if not lhs or not rhs then return false, false end
+	--if not lhs or not rhs then return false, false end
 	if sortOrder == "Name" or sortOrder == ProfessionsSortOrder.ItemName then
 		local lhsItem = Item:CreateFromItemID(lhs.orderInfo.itemID);
 		local rhsItem = Item:CreateFromItemID(rhs.orderInfo.itemID);
@@ -239,11 +260,11 @@ local function ApplySortOrder(sortOrder, lhs, rhs)
 		return lhs.profession > rhs.profession, lhs.profession == rhs.profession;
 	elseif sortOrder == "TYPE" then
 		return lhs.orderInfo.orderType > rhs.orderInfo.orderType, lhs.orderInfo.orderType == rhs.orderInfo.orderType;
-	elseif sortOrder == "Date" then
+	else --if sortOrder == "Date" then
 		return SortDate(lhs, rhs), (lhs.date.year == rhs.date.year and lhs.date.month == rhs.date.month and lhs.date.day == rhs.date.day)
 	end
 
-	return false, false;
+	--return false, false;
 end
 
 function ProfessionsCraftingOrderPageMixin2:ResetSortOrder()
@@ -381,11 +402,12 @@ function ProfessionsCraftingOrderPageMixin2:ShowGeneric(orders, browseType, offs
 			end
 
 			if self.secondarySort then
-				res, equal = ApplySortOrder(self.secondarySort.order, lhs, rhs);
+				--print(self.secondarySort.order)
+			--	res, equal = ApplySortOrder(self.secondarySort.order, lhs, rhs);
 				if self.secondarySort.ascending then
-					return res;
+				--	return res;
 				else
-					return equal or (not res);
+				--	return equal or (not res);
 				end
 			end
 
@@ -501,8 +523,7 @@ RecieptTableCellProcsMixin = CreateFromMixins(TableBuilderCellMixin);
 function RecieptTableCellProcsMixin:Populate(rowData, dataIndex)
 	local text = ""
 	local comma = ""
-
-	if not rowData.option.results or rowData.option.details then 
+	if not rowData.option.results or not rowData.option.details then 
 		ProfessionsTableCellTextMixin.SetText(self, "");
 		return
 	end
