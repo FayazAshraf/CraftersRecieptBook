@@ -472,13 +472,13 @@ function RecieptTableCellDateMixin:Populate(rowData, dataIndex)
 
 	zone = "am"
 	hour = orderdate.hour
-	if (hour >= 12) then
+	if (hour > 11) then
 		zone = "pm"
 	end
+
 	hour = hour % 12
 	if (hour == 0) then
 		hour = 12
-		zone = "am"
 	end
 
 	minute = orderdate.min
