@@ -166,17 +166,20 @@ local function GetProfessionCrafts()
 
 		local orderType = data.orderInfo.orderType
 		if data.profession == profession1 then
-			profession1Crafts = profession1Crafts + 1
-			profession1Profit = profession1Profit + data.orderInfo.tipAmount - data.orderInfo.consortiumCut
-			profession1Data[orderType + 1] = profession1Data[orderType + 1] + 1
+			if not data.orderInfo.isFulfillable then
+				profession1Crafts = profession1Crafts + 1
+				profession1Profit = profession1Profit + data.orderInfo.tipAmount - data.orderInfo.consortiumCut
+				profession1Data[orderType + 1] = profession1Data[orderType + 1] + 1
+			end
 		elseif data.profession ~= profession1 then
 			if not profession2 then
 				profession2 = data.profession
 	 		end
-
-			profession2Crafts = profession2Crafts + 1
-			profession2Profit = profession2Profit + data.orderInfo.tipAmount - data.orderInfo.consortiumCut
-			profession2Data[orderType + 1] = profession2Data[orderType + 1] + 1
+			if not data.orderInfo.isFulfillable then
+				profession2Crafts = profession2Crafts + 1
+				profession2Profit = profession2Profit + data.orderInfo.tipAmount - data.orderInfo.consortiumCut
+				profession2Data[orderType + 1] = profession2Data[orderType + 1] + 1
+			end
 		end
 	end
 
@@ -311,29 +314,33 @@ function addon:UpdateTotals()
 	local profession1, profession2
 	local profession1Profit = 0
 	local profession2Profit = 0
+	local properCount = 0
 	if not profession.profession then return end
 
 	local remainingClaims = C_CraftingOrders.GetOrderClaimInfo(profession.profession).claimsRemaining or 0
 	for id, data in ipairs(addon.db.char.orders) do
-		local orderprofit = data.orderInfo.tipAmount - data.orderInfo.consortiumCut 
-		totalProfit = totalProfit + orderprofit
-
-		if data.date.month == currentDate.month and data.date.day == currentDate.day and data.date.year == currentDate.year then
+		if not data.orderInfo.isFulfillable then
+			properCount = properCount + 1
 			local orderprofit = data.orderInfo.tipAmount - data.orderInfo.consortiumCut 
-			dailyProfit = dailyProfit + orderprofit
-		end
+			totalProfit = totalProfit + orderprofit
 
-		if data.results then 
-			if data.results.isCrit then
-				inspired = inspired + 1
+			if data.date.month == currentDate.month and data.date.day == currentDate.day and data.date.year == currentDate.year then
+				local orderprofit = data.orderInfo.tipAmount - data.orderInfo.consortiumCut 
+				dailyProfit = dailyProfit + orderprofit
 			end
 
-			if data.results.resourcesReturned then
-				resourceful = resourceful + 1
-			end
+			if data.results then
+				if data.results.isCrit then
+					inspired = inspired + 1
+				end
 
-			if data.results.multicraft ~= 0 then
-				multicraft = multicraft + 1
+				if data.results.resourcesReturned then
+					resourceful = resourceful + 1
+				end
+
+				if data.results.multicraft ~= 0 then
+					multicraft = multicraft + 1
+				end
 			end
 		end
 	end
@@ -351,7 +358,7 @@ function addon:UpdateTotals()
 
 	local profession1 = addon:GetProfessionName(craftData[1])
 	local profession2
-	addon.detailsTextFrame.Field1:SetText("Total Orders Crafted: "..#addon.db.char.orders)
+	addon.detailsTextFrame.Field1:SetText("Total Orders Crafted: "..properCount)
 	addon.detailsTextFrame.Field2:SetText(profession1..": "..craftData[2])
 
 	if craftData[5] then
@@ -370,6 +377,6 @@ function addon:UpdateTotals()
 	addon.detailsTextFrame2.Field3:SetText("Multicraft Procs: "..multicraft)
 
 	local profit = addon:ConvertToGold(craftData[3])
-	addon.detailsTextFrame3.Field1:SetText("=Profit by Profession=")
+	addon.detailsTextFrame3.Field1:SetText("Profit by Profession")
 	addon.detailsTextFrame3.Field2:SetText(profession1..": ".. profit[1].."   "..profit[2].."   "..profit[3])	 
 end
