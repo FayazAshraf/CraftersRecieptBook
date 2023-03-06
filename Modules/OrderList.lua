@@ -32,13 +32,13 @@ local PTC = {
   	RightCellPadding=0,
 	Padding=10,
 	LeftCellPadding=0,
-	Width=220
+	Width=180
   },
   CustomerName={
 	RightCellPadding=0,
 	Padding=10,
 	LeftCellPadding=0,
-	Width=175
+	Width=155
   },
   NoPadding=0,
   StandardPadding=10,
@@ -53,26 +53,25 @@ local PTC = {
 	RightCellPadding=0,
 	Padding=10,
 	LeftCellPadding=0,
-	Width=300
+	Width=280
   },
    Date={
 	RightCellPadding=0,
 	Padding=10,
 	LeftCellPadding=0,
-	Width=75
+	Width=140
   },
-
-	Profession={
+  Profession={
 	RightCellPadding=0,
 	Padding=10,
 	LeftCellPadding=0,
-	Width=85
+	Width=110
   },
   Type={
 	RightCellPadding=0,
 	Padding=10,
 	LeftCellPadding=0,
-	Width=65
+	Width=70
   }
 }
 
@@ -207,7 +206,7 @@ function ProfessionsCraftingOrderPageMixin2:SortOrderIsValid(sortOrder)
 end
 
 
-function date_to_excel_date(dd, mm, yy) 
+function date_to_excel_date(ss, min, hh, dd, mm, yy) 
 local days, monthdays, leapyears, nonleapyears, nonnonleapyears
 
     monthdays= { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
@@ -228,19 +227,20 @@ local days, monthdays, leapyears, nonleapyears, nonnonleapyears
     c=c+1
     end
 
-    days=days+dd+1
+    days = days + dd + 1
+	daysInMinutes = days * 24 * 60
+	minutes = (hh * 60) + min
+	seconds = ((daysInMinutes + minutes) * 60) + ss
 
-    return days
+    return seconds
 end
 
 local function SortDate(lhs, rhs)
-
-
 	if not lhs or not rhs then return false end
 
-	return date_to_excel_date(lhs.date.day, lhs.date.month, lhs.date.year) > date_to_excel_date(rhs.date.day, rhs.date.month, rhs.date.year)
-
-
+	a = date_to_excel_date(lhs.date.sec, lhs.date.min, lhs.date.hour, lhs.date.day, lhs.date.month, lhs.date.year)
+	b = date_to_excel_date(rhs.date.sec, rhs.date.min, rhs.date.hour, rhs.date.day, rhs.date.month, rhs.date.year)
+	return a > b
 end
 
 local function ApplySortOrder(sortOrder, lhs, rhs)
@@ -261,7 +261,14 @@ local function ApplySortOrder(sortOrder, lhs, rhs)
 	elseif sortOrder == "TYPE" then
 		return lhs.orderInfo.orderType > rhs.orderInfo.orderType, lhs.orderInfo.orderType == rhs.orderInfo.orderType;
 	else --if sortOrder == "Date" then
-		return SortDate(lhs, rhs), (lhs.date.year == rhs.date.year and lhs.date.month == rhs.date.month and lhs.date.day == rhs.date.day)
+		return SortDate(lhs, rhs), (
+			lhs.date.sec == rhs.date.sec and 
+			lhs.date.min == rhs.date.min and 
+			lhs.date.hour == rhs.date.hour and 
+			lhs.date.year == rhs.date.year and
+			lhs.date.month == rhs.date.month and 
+			lhs.date.day == rhs.date.day
+		)
 	end
 
 	--return false, false;
@@ -462,7 +469,24 @@ end
 RecieptTableCellDateMixin = CreateFromMixins(TableBuilderCellMixin);
 function RecieptTableCellDateMixin:Populate(rowData, dataIndex)
 	local orderdate = rowData.option.date
-	local text = orderdate.month.."/"..orderdate.day.."/"..orderdate.year
+
+	zone = "am"
+	hour = orderdate.hour
+	if (hour > 11) then
+		zone = "pm"
+	end
+
+	hour = hour % 12
+	if (hour == 0) then
+		hour = 12
+	end
+
+	minute = orderdate.min
+	if (minute < 10) then
+		minute = "0"..minute
+	end
+
+	local text = "  "..orderdate.month.."/"..orderdate.day.."/"..orderdate.year.." "..hour..":"..minute.." "..zone
 
 	ProfessionsTableCellTextMixin.SetText(self, text);
 end
@@ -516,6 +540,9 @@ function RecieptTableCellActualCommissionMixin:Populate(rowData, dataIndex)
 
 	--TODO: hide values of 0
 	local text = profit[1].."   "..profit[2].."   "..profit[3]
+	if rowData.option.orderInfo.isFulfillable then
+		text = "--- recraft ---";
+	end
 	ProfessionsTableCellTextMixin.SetText(self, text);
 end
 
@@ -562,6 +589,10 @@ function RecieptTableCellProcsMixin:Populate(rowData, dataIndex)
 			local ItemID = Item:CreateFromItemID(d.itemID);
 			local ItemName = ItemID:GetItemName();
 			local quantity = d.quantity
+
+			if (ItemName == nil) then
+				ItemName = ''
+			end
 
 			text = text..ItemName.."("..quantity..")"
 		end
